@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VPS Server Specification & Infrastructure Architecture</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 14mm 14mm 14mm;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      line-height: 1.55;
+      font-size: 13px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .header {
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-green { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-purple { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+    .badge-amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 22px 0 10px 0;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h2 .section-num {
+      background: #3b82f6;
+      color: #ffffff;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    h3 {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #334155;
+      margin: 14px 0 6px 0;
+    }
+    p {
+      margin-bottom: 8px;
+      color: #334155;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 14px 0;
+      font-size: 12px;
+      page-break-inside: avoid;
+    }
+    th, td {
+      padding: 7px 10px;
+      text-align: left;
+      border: 1px solid #e2e8f0;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: 0.5px;
+    }
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
+    td strong {
+      color: #0f172a;
+    }
+    .callout {
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin: 12px 0;
+      font-size: 12px;
+      page-break-inside: avoid;
+    }
+    .callout-info {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    .callout-warning {
+      background: #fefce8;
+      border-left: 4px solid #eab308;
+      color: #854d0e;
+    }
+    .callout-danger {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #991b1b;
+    }
+
+    pre, code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    code {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 1.5px 5px;
+      border-radius: 4px;
+      font-size: 11.5px;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin: 10px 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      page-break-inside: avoid;
+    }
+    .tree-view {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #1e293b;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      margin: 10px 0;
+      page-break-inside: avoid;
+    }
+    .page-break {
+      page-break-before: always;
+      margin-top: 15px;
+    }
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+    .diagram-container {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      page-break-inside: avoid;
+      text-align: center;
+    }
+    .diagram-container svg {
+      width: 100%;
+      height: auto;
+      max-height: 380px;
+    }
+    .footer {
+      margin-top: 25px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 10.5px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="title-row">
+      <div>
+        <h1>VPS Server Specification & Architecture</h1>
+        <div class="subtitle">Complete technical blueprint, system topology, security policies, and standard operating procedures.</div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-blue">IPv4: 172.255.210.203</span>
+      <span class="badge badge-blue">SSH: vps-prod</span>
+      <span class="badge badge-green">OS: Ubuntu 24.04.5 LTS</span>
+      <span class="badge badge-purple">CPU: 6 vCPU AMD EPYC</span>
+      <span class="badge badge-amber">RAM: 16 GB (15 GiB Usable)</span>
+      <span class="badge badge-green">Storage: 200 GB SSD</span>
+    </div>
+  </div>
+
+  <!-- Section 1: Hardware Specs -->
+  <div class="avoid-break">
+    <h2><span class="section-num">1</span> Live Hardware & Operating System Specifications</h2>
+    <div class="callout callout-info">
+      Hardware specs verified live from the KVM hypervisor and Linux kernel <code>6.8.0-146-generic</code> via <code>lscpu</code>, <code>free -h</code>, <code>lsblk</code>, and <code>df -h</code>.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Subsystem</th>
+          <th style="width: 30%;">Configuration</th>
+          <th style="width: 45%;">Live Operational Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Virtualization</strong></td>
+          <td>CloudStack KVM Hypervisor</td>
+          <td>Full KVM Hardware Virtualization (QEMU/KVM <code>x86_64</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Operating System</strong></td>
+          <td>Ubuntu 24.04.5 LTS</td>
+          <td>Noble Numbat (Kernel <code>6.8.0-146-generic</code> SMP PREEMPT_DYNAMIC)</td>
+        </tr>
+        <tr>
+          <td><strong>Processor (CPU)</strong></td>
+          <td>6 vCPU AMD EPYC</td>
+          <td>6 Cores / 1 Socket / 6 Threads @ 2.0 GHz (BogoMIPS: 5589.49)</td>
+        </tr>
+        <tr>
+          <td><strong>CPU Cache</strong></td>
+          <td>Multi-Tier Dedicated</td>
+          <td>L1d: 192 KiB, L1i: 384 KiB, L2: 3 MiB, L3: 8 MiB (Single Instance)</td>
+        </tr>
+        <tr>
+          <td><strong>Memory (RAM)</strong></td>
+          <td>16 GB (15 GiB Usable)</td>
+          <td>16,376,316 kB Total | ~1.0 GiB In Use | ~14.6 GiB Available</td>
+        </tr>
+        <tr>
+          <td><strong>Swap Space</strong></td>
+          <td>4.0 GB Active</td>
+          <td>Dedicated <code>/swapfile</code> (Priority -2)</td>
+        </tr>
+        <tr>
+          <td><strong>Primary Disk Storage</strong></td>
+          <td>200 GB SSD (ext4)</td>
+          <td><code>/dev/sda2</code>: 197 GB Total | 9.8 GB Used (6%) | 179 GB Available</td>
+        </tr>
+        <tr>
+          <td><strong>Network Interface</strong></td>
+          <td><code>eth0</code> (Gigabit Ethernet)</td>
+          <td>IPv4: <code>172.255.210.203/24</code> | IPv6: <code>2402:a7c0:3003:115::d6b/64</code></td>
+        </tr>
+        <tr>
+          <td><strong>Docker Engine</strong></td>
+          <td>Version 29.9.2 (build a82e528)</td>
+          <td>Storage Driver: <code>overlay2</code> | Logging: <code>json-file</code> (10m max, 3 files)</td>
+        </tr>
+        <tr>
+          <td><strong>Docker Compose</strong></td>
+          <td>Version v5.7.0</td>
+          <td>Integrated Native Docker Compose v2 CLI plugin</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 2: Architecture & Topology Diagram -->
+  <div class="avoid-break">
+    <h2><span class="section-num">2</span> Infrastructure Architecture & Network Topology</h2>
+    <div class="diagram-container">
+      <svg viewBox="0 0 850 370" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background grids/cards -->
+        <rect x="10" y="10" width="160" height="340" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="90" y="32" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle">EXTERNAL TRAFFIC</text>
+
+        <!-- External boxes -->
+        <rect x="25" y="55" width="130" height="60" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+        <text x="90" y="80" font-family="sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">Web Traffic</text>
+        <text x="90" y="98" font-family="sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Ports: 80 (HTTP), 443 (HTTPS)</text>
+
+        <rect x="25" y="145" width="130" height="60" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+        <text x="90" y="170" font-family="sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">Admin Access</text>
+        <text x="90" y="188" font-family="sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Port 22 (SSH), 81 (NPM UI)</text>
+
+        <!-- Firewall Box -->
+        <rect x="200" y="10" width="160" height="340" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+        <text x="280" y="32" font-family="sans-serif" font-size="12" font-weight="bold" fill="#991b1b" text-anchor="middle">UFW FIREWALL</text>
+
+        <rect x="215" y="55" width="130" height="42" rx="4" fill="#ffffff" stroke="#ef4444" stroke-width="1"/>
+        <text x="280" y="74" font-family="sans-serif" font-size="10" font-weight="bold" fill="#15803d" text-anchor="middle">ALLOW 80, 443 / tcp</text>
+        <text x="280" y="88" font-family="sans-serif" font-size="9" fill="#64748b" text-anchor="middle">HTTP & HTTPS Web</text>
+
+        <rect x="215" y="110" width="130" height="42" rx="4" fill="#ffffff" stroke="#ef4444" stroke-width="1"/>
+        <text x="280" y="129" font-family="sans-serif" font-size="10" font-weight="bold" fill="#15803d" text-anchor="middle">ALLOW 22 / tcp</text>
+        <text x="280" y="143" font-family="sans-serif" font-size="9" fill="#64748b" text-anchor="middle">OpenSSH Remote</text>
+
+        <rect x="215" y="165" width="130" height="42" rx="4" fill="#ffffff" stroke="#ef4444" stroke-width="1"/>
+        <text x="280" y="184" font-family="sans-serif" font-size="10" font-weight="bold" fill="#15803d" text-anchor="middle">ALLOW 81 / tcp</text>
+        <text x="280" y="198" font-family="sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Proxy Manager UI</text>
+
+        <rect x="215" y="225" width="130" height="60" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1"/>
+        <text x="280" y="247" font-family="sans-serif" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">DENY ALL INCOMING</text>
+        <text x="280" y="262" font-family="sans-serif" font-size="9" fill="#b91c1c" text-anchor="middle">DB Ports 3306 & 6379</text>
+        <text x="280" y="274" font-family="sans-serif" font-size="9" fill="#b91c1c" text-anchor="middle">Strictly Blocked Outside</text>
+
+        <!-- Docker Network Box -->
+        <rect x="390" y="10" width="450" height="340" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="615" y="32" font-family="sans-serif" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">DOCKER BRIDGE: shared-network (172.18.0.0/16)</text>
+
+        <!-- Reverse Proxy Container -->
+        <rect x="410" y="55" width="190" height="75" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="505" y="78" font-family="sans-serif" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">infra-proxy</text>
+        <text x="505" y="94" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">Nginx Proxy Manager (v2)</text>
+        <text x="505" y="112" font-family="sans-serif" font-size="9" fill="#059669" text-anchor="middle">SSL Auto-Certs (Let's Encrypt)</text>
+
+        <!-- Applications Stacks -->
+        <rect x="630" y="55" width="190" height="120" rx="6" fill="#ffffff" stroke="#8b5cf6" stroke-width="1.5"/>
+        <text x="725" y="78" font-family="sans-serif" font-size="11" font-weight="bold" fill="#6d28d9" text-anchor="middle">App Containers (/opt/apps/*)</text>
+        <rect x="645" y="90" width="160" height="35" rx="4" fill="#faf5ff" stroke="#c084fc" stroke-width="1"/>
+        <text x="725" y="107" font-family="sans-serif" font-size="10" font-weight="bold" fill="#581c87" text-anchor="middle">app-&lt;project-1&gt; :3000</text>
+        <text x="725" y="119" font-family="sans-serif" font-size="8.5" fill="#7e22ce" text-anchor="middle">Node / Next.js / Python</text>
+
+        <rect x="645" y="132" width="160" height="35" rx="4" fill="#faf5ff" stroke="#c084fc" stroke-width="1"/>
+        <text x="725" y="149" font-family="sans-serif" font-size="10" font-weight="bold" fill="#581c87" text-anchor="middle">app-&lt;project-2&gt; :80</text>
+        <text x="725" y="161" font-family="sans-serif" font-size="8.5" fill="#7e22ce" text-anchor="middle">Nginx / Vue / SPA</text>
+
+        <!-- Databases Box -->
+        <rect x="410" y="210" width="410" height="125" rx="6" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+        <text x="615" y="232" font-family="sans-serif" font-size="11" font-weight="bold" fill="#065f46" text-anchor="middle">SHARED PERSISTENT DATA LAYER (Internal Only)</text>
+
+        <rect x="425" y="245" width="180" height="75" rx="4" fill="#f0fdf4" stroke="#4ade80" stroke-width="1"/>
+        <text x="515" y="268" font-family="sans-serif" font-size="10.5" font-weight="bold" fill="#166534" text-anchor="middle">shared-mysql</text>
+        <text x="515" y="284" font-family="sans-serif" font-size="9" fill="#15803d" text-anchor="middle">MySQL 8.0 (Port 3306)</text>
+        <text x="515" y="302" font-family="sans-serif" font-size="8.5" fill="#475569" text-anchor="middle">Daily Backup @ 02:00 AM</text>
+
+        <rect x="625" y="245" width="180" height="75" rx="4" fill="#f0fdf4" stroke="#4ade80" stroke-width="1"/>
+        <text x="715" y="268" font-family="sans-serif" font-size="10.5" font-weight="bold" fill="#166534" text-anchor="middle">shared-redis</text>
+        <text x="715" y="284" font-family="sans-serif" font-size="9" fill="#15803d" text-anchor="middle">Redis 7 Alpine (Port 6379)</text>
+        <text x="715" y="302" font-family="sans-serif" font-size="8.5" fill="#475569" text-anchor="middle">AOF Persistence + Password</text>
+
+        <!-- Routing Arrows -->
+        <!-- External to Firewall -->
+        <path d="M 155 85 L 215 76" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+        <path d="M 155 175 L 215 131" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,3" fill="none"/>
+        <path d="M 155 175 L 215 186" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,3" fill="none"/>
+
+        <!-- Firewall to Proxy -->
+        <path d="M 345 76 L 410 85" stroke="#2563eb" stroke-width="2" fill="none"/>
+        <path d="M 345 186 L 410 100" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+
+        <!-- Proxy to Apps -->
+        <path d="M 600 95 L 645 105" stroke="#7c3aed" stroke-width="2" fill="none"/>
+        <path d="M 600 105 L 645 145" stroke="#7c3aed" stroke-width="2" fill="none"/>
+
+        <!-- Apps to DBs -->
+        <path d="M 725 175 L 725 245" stroke="#059669" stroke-width="2" fill="none"/>
+        <path d="M 680 175 L 530 245" stroke="#059669" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- Section 3: Directory Layout -->
+  <div class="avoid-break">
+    <h2><span class="section-num">3</span> Standard Directory Standard (<code>/opt</code>)</h2>
+    <p>All core infrastructure, container configurations, persistent storage volumes, and automation scripts reside in <code>/opt</code>:</p>
+
+    <pre class="tree-view">
+/opt/
+├── infra/
+│   ├── proxy/                      # Nginx Proxy Manager Stack
+│   │   ├── docker-compose.yml      # Reverse proxy & SSL manager service definition
+│   │   ├── data/                   # NPM database, access lists & configs
+│   │   └── letsencrypt/            # Automated Let's Encrypt certificates
+│   └── database/                   # Shared MySQL & Redis Stack
+│       ├── .env                    # Root passwords (mode 0600 - root only)
+│       ├── docker-compose.yml      # MySQL 8.0 & Redis 7 services
+│       ├── data/                   # Persistent MySQL data (/var/lib/mysql, mode 0700)
+│       └── init/                   # Custom init SQL scripts (/docker-entrypoint-initdb.d)
+├── apps/                           # Application Deployments
+│   └── &lt;project-slug&gt;/             # Isolated stack per project
+│       ├── docker-compose.yml      # Service definition (attaches to shared-network)
+│       ├── .env.production         # Project-specific environment variables
+│       └── app/                    # Codebase repository & Dockerfile
+└── ops/                            # Operations, Automation & Maintenance
+    ├── backups/                    # Automated Database Backups (mode 0700)
+    │   ├── db-backup.sh            # Daily automated mysqldump script
+    │   └── archives/               # Rolling 7-day compressed archives (.sql.gz)
+    └── maintenance/
+        └── docker-cleanup.sh       # Weekly Docker builder & image pruning script
+    </pre>
+  </div>
+
+  <!-- Section 4: Active Services -->
+  <div class="avoid-break">
+    <h2><span class="section-num">4</span> Running Containers & Network Isolation</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Container Name</th>
+          <th>Docker Image</th>
+          <th>Internal Ports</th>
+          <th>Public Host Ports</th>
+          <th>Restart Policy</th>
+          <th>Attached Volumes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>infra-proxy</code></td>
+          <td><code>jc21/nginx-proxy-manager:latest</code></td>
+          <td><code>80</code>, <code>443</code>, <code>81</code></td>
+          <td><code>0.0.0.0:80, 443, 81</code></td>
+          <td><code>unless-stopped</code></td>
+          <td><code>./data</code>, <code>./letsencrypt</code></td>
+        </tr>
+        <tr>
+          <td><code>shared-mysql</code></td>
+          <td><code>mysql:8.0</code></td>
+          <td><code>3306</code>, <code>33060</code></td>
+          <td><strong style="color: #dc2626;">None (Blocked)</strong></td>
+          <td><code>unless-stopped</code></td>
+          <td><code>./data</code> (<code>/var/lib/mysql</code>), <code>./init</code></td>
+        </tr>
+        <tr>
+          <td><code>shared-redis</code></td>
+          <td><code>redis:7-alpine</code></td>
+          <td><code>6379</code></td>
+          <td><strong style="color: #dc2626;">None (Blocked)</strong></td>
+          <td><code>unless-stopped</code></td>
+          <td>In-memory with AOF persistence</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 5: Security & Firewalls -->
+  <div class="avoid-break">
+    <h2><span class="section-num">5</span> Security Protocols & Firewall Hardening</h2>
+    <div class="callout callout-danger">
+      <strong>Strict Isolation Policy:</strong> Application stacks must never bind database ports (3306, 6379) to host interfaces (0.0.0.0). All container traffic must communicate strictly over the internal bridge <code>shared-network</code>.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 20%;">Security Domain</th>
+          <th style="width: 35%;">Configuration & Policy</th>
+          <th style="width: 45%;">Implementation Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>UFW Firewall</strong></td>
+          <td>Default Deny Incoming | Allow Outgoing</td>
+          <td>Whitelisted: <code>22/tcp</code> (SSH), <code>80/tcp</code> (HTTP), <code>443/tcp</code> (HTTPS), <code>81/tcp</code> (NPM UI)</td>
+        </tr>
+        <tr>
+          <td><strong>SSH Authentication</strong></td>
+          <td>Ed25519 Key-Based Authentication</td>
+          <td>Configured in <code>~/.ssh/authorized_keys</code>; accessible locally via alias <code>ssh vps-prod</code></td>
+        </tr>
+        <tr>
+          <td><strong>Root Credentials</strong></td>
+          <td>Restricted Read-Only Access (<code>chmod 600</code>)</td>
+          <td>Stored exclusively at <code>/opt/infra/database/.env</code>; apps connect via dedicated accounts</td>
+        </tr>
+        <tr>
+          <td><strong>Proxy Management</strong></td>
+          <td>Nginx Proxy Manager Admin Console</td>
+          <td>Accessible via <code>http://172.255.210.203:81</code> (Auto-provisions Let's Encrypt SSL)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 6: Cron & Operations -->
+  <div class="avoid-break">
+    <h2><span class="section-num">6</span> Automated Backups & System Maintenance</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Task</th>
+          <th style="width: 20%;">Schedule (Cron)</th>
+          <th style="width: 30%;">Script Target</th>
+          <th style="width: 25%;">Retention Policy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>MySQL Full Dump</strong></td>
+          <td><code>0 2 * * *</code> (Daily 02:00 UTC)</td>
+          <td><code>/opt/ops/backups/db-backup.sh</code></td>
+          <td>7-day rolling <code>.sql.gz</code> archives</td>
+        </tr>
+        <tr>
+          <td><strong>Docker Garbage Prune</strong></td>
+          <td><code>0 4 * * 0</code> (Weekly Sun 04:00 UTC)</td>
+          <td><code>/opt/ops/maintenance/docker-cleanup.sh</code></td>
+          <td>Prunes images & builder cache &gt;168h</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- Section 7: SOP -->
+  <div class="avoid-break">
+    <h2><span class="section-num">7</span> Standard Operating Procedure (SOP): Project Deployment</h2>
+
+    <h3>Step 1: Provision Isolated Database & User</h3>
+    <p>Never connect apps with MySQL <code>root</code>. Provision an isolated schema and user:</p>
+    <pre>
+# Local Helper Script
+./scripts/provision-db.sh &lt;project-slug&gt;
+
+# Remote Non-Interactive Execution
+ssh vps-prod 'bash -s' &lt;&lt; 'ENDSSH'
+source /opt/infra/database/.env
+APP_DB="db_&lt;project-slug&gt;"
+APP_USER="user_&lt;project-slug&gt;"
+APP_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)
+
+docker exec -i shared-mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" &lt;&lt;SQL
+CREATE DATABASE IF NOT EXISTS \`${APP_DB}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${APP_USER}'@'%' IDENTIFIED BY '${APP_PASS}';
+GRANT ALL PRIVILEGES ON \`${APP_DB}\`.* TO '${APP_USER}'@'%';
+FLUSH PRIVILEGES;
+SQL
+
+echo "DB_HOST=shared-mysql"
+echo "DB_PORT=3306"
+echo "DB_DATABASE=${APP_DB}"
+echo "DB_USERNAME=${APP_USER}"
+echo "DB_PASSWORD=${APP_PASS}"
+ENDSSH
+    </pre>
+
+    <h3>Step 2: Configure Application Container (<code>docker-compose.yml</code>)</h3>
+    <p>Place in <code>/opt/apps/&lt;project-slug&gt;/docker-compose.yml</code> without public host port mappings:</p>
+    <pre>
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: app-&lt;project-slug&gt;
+    restart: unless-stopped
+    env_file: .env.production
+    networks:
+      - shared-network
+    # IMPORTANT: DO NOT expose host ports (e.g. no "3000:3000" or "80:80")
+
+networks:
+  shared-network:
+    external: true
+    </pre>
+
+    <h3>Step 3: Route Inbound Traffic via Nginx Proxy Manager</h3>
+    <ol style="margin-left: 20px; color: #334155; font-size: 12px; line-height: 1.6;">
+      <li>Log in to <strong>NPM Console</strong> at <code>http://172.255.210.203:81</code>.</li>
+      <li>Navigate to <strong>Hosts &rarr; Proxy Hosts &rarr; Add Proxy Host</strong>.</li>
+      <li>Set <strong>Domain Names</strong>: e.g. <code>api.yourdomain.com</code> or <code>app.yourdomain.com</code>.</li>
+      <li>Set <strong>Forward Hostname / IP</strong>: <code>app-&lt;project-slug&gt;</code> (resolved automatically via Docker DNS).</li>
+      <li>Set <strong>Forward Port</strong>: <code>3000</code> (Node/Next.js) or <code>80</code> (Nginx/SPA).</li>
+      <li>Under <strong>SSL Tab</strong>: Select <em>Request a new SSL Certificate</em>, enable <em>Force SSL</em> and <em>Block Common Exploits</em>.</li>
+    </ol>
+  </div>
+
+  <div class="footer">
+    <span>VPS Infrastructure & Architecture Specification &bull; Host: 172.255.210.203</span>
+    <span>Generated: November 2026 &bull; Page 3 of 3</span>
+  </div>
+
+</body>
+</html>
