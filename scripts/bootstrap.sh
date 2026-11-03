@@ -148,3 +148,4 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 echo "Generated Database Credentials:"
 cat /opt/infra/database/.env
 ENDSSH
+

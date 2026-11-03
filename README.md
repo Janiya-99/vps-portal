@@ -22,3 +22,4 @@ Target Host: `172.255.210.203` (SSH alias: `vps-prod`)
    ```bash
    ./scripts/provision-db.sh <project-slug>
    ```
+

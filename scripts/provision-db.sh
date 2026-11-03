@@ -35,3 +35,4 @@ echo "DB_USERNAME=${APP_USER}"
 echo "DB_PASSWORD=${APP_PASS}"
 echo "---------------------------------"
 ENDSSH
+

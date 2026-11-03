@@ -22,3 +22,4 @@ echo "Project directory structure ready at ${APP_DIR}."
 echo "App container name must be: app-${SLUG}"
 echo "Network attachment must be: shared-network"
 ENDSSH
+

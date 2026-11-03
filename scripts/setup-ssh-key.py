@@ -88,3 +88,4 @@ if res.returncode == 0:
 else:
     print("Verification failed:", res.stderr)
     sys.exit(1)
+

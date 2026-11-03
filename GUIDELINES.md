@@ -199,3 +199,4 @@ ENDSSH
 2. Container name MUST be `app-<slug>`.
 3. Attach container to external network `shared-network`.
 4. Do NOT bind host ports (`ports:`) in `docker-compose.yml`. Route traffic internally through `infra-proxy` using container name `app-<slug>` and its internal port (`3000` for Next.js, `80` for Vue/Nginx).
+
