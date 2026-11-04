@@ -1,0 +1,25 @@
+services:
+  vps-portal:
+    build: .
+    container_name: app-vps-portal
+    restart: unless-stopped
+    env_file: .env.production
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt:/opt
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    environment:
+      - HOST_PROC=/host/proc
+      - HOST_SYS=/host/sys
+      - PORT=8080
+      - MYSQL_HOST=shared-mysql
+      - REDIS_HOST=shared-redis
+      - NPM_BASE_URL=http://infra-proxy:81/api
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
+

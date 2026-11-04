@@ -218,3 +218,4 @@ networks:
 4. Set **Forward Hostname / IP**: `app-<project-slug>` *(resolves automatically via Docker DNS)*.
 5. Set **Forward Port**: `3000` (or `80` depending on the framework).
 6. Under the **SSL** tab, select **Request a new SSL Certificate**, enable **Block Common Exploits** and **Force SSL**.
+
