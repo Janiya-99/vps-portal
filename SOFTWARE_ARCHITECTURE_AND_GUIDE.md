@@ -9,11 +9,11 @@ All core administrative interfaces are containerized, isolated, and connected th
 
 | Service | Access URL | Port / Protocol | Default Credentials | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| **VPS Nexus Control Portal** | [http://172.255.210.203](http://172.255.210.203)<br>`https://vps.pixandco.lk` | `80` (HTTP)<br>`443` (HTTPS) | **User:** `admin`<br>**Password:** `NexusVps2026!` | Unified host telemetry, Docker orchestrator, DB studio, domain router, ops |
-| **phpMyAdmin Web Studio** | [http://172.255.210.203:8085](http://172.255.210.203:8085) | `8085` (HTTP) | **Server:** `shared-mysql`<br>**User:** `root`<br>**Password:** `7axxwAI6Ru2aDBXQoOnAdTxV` | Visual web database manager, table browser, SQL query runner |
-| **Nginx Proxy Manager (NPM)**| [http://172.255.210.203:81](http://172.255.210.203:81) | `81` (HTTP Admin) | **Email:** `admin@example.com`<br>**Password:** `changeme` | Reverse proxy host manager, Let's Encrypt SSL certificates, access lists |
-| **Shared MySQL 8.0 (Internal)**| `shared-mysql:3306` | `3306` (Internal Only) | **User:** `root`<br>**Password:** `7axxwAI6Ru2aDBXQoOnAdTxV` | High-performance multi-tenant database engine |
-| **Shared Redis 7 (Internal)** | `shared-redis:6379` | `6379` (Internal Only) | **Password:** `fxYQHrUaFl9C90MG2A0BNpfM` | In-memory key-value cache, session store, AOF persistence |
+| **VPS Nexus Control Portal** | [http://172.255.210.203](http://172.255.210.203)<br>`https://vps.pixandco.lk` | `80` (HTTP)<br>`443` (HTTPS) | **User:** `admin`<br>**Password:** `[Configured in .env.production]` | Unified host telemetry, Docker orchestrator, DB studio, domain router, ops |
+| **phpMyAdmin Web Studio** | [http://172.255.210.203:8085](http://172.255.210.203:8085) | `8085` (HTTP) | **Server:** `shared-mysql`<br>**User:** `root`<br>**Password:** `[Configured in /opt/infra/database/.env]` | Visual web database manager, table browser, SQL query runner |
+| **Nginx Proxy Manager (NPM)**| [http://172.255.210.203:81](http://172.255.210.203:81) | `81` (HTTP Admin) | **Email:** `admin@example.com`<br>**Password:** `[Default changeme / user configured]` | Reverse proxy host manager, Let's Encrypt SSL certificates, access lists |
+| **Shared MySQL 8.0 (Internal)**| `shared-mysql:3306` | `3306` (Internal Only) | **User:** `root`<br>**Password:** `[Configured in /opt/infra/database/.env]` | High-performance multi-tenant database engine |
+| **Shared Redis 7 (Internal)** | `shared-redis:6379` | `6379` (Internal Only) | **Password:** `[Configured in /opt/infra/database/.env]` | In-memory key-value cache, session store, AOF persistence |
 | **Direct SSH Access** | `ssh root@172.255.210.203`<br>`ssh vps-prod` | `22` (OpenSSH) | SSH Key / Root Password | Host OS administration, root shell, emergency maintenance |
 
 > [!IMPORTANT]
@@ -240,4 +240,3 @@ All endpoints (except `/auth/login`, `/ping`, `/meta`) require the `jwt_token` c
    ```
 3. Start the stack: `docker compose up -d`
 4. Route domain in VPS Nexus (**Domains & Proxy**) or in NPM to `app-<project-slug>:<port>`.
-
