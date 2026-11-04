@@ -26,11 +26,11 @@ export function AppSidebar({ currentTab, setCurrentTab, isOpenMobile, setIsOpenM
             <Server className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-sm font-bold tracking-tight text-zinc-100 flex items-center gap-1.5">
-              VPS NEXUS
+            <div className="text-base font-black tracking-widest text-zinc-100 flex items-center gap-1.5">
+              PIXANDCO
               <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_#f43f5e]" />
             </div>
-            <div className="text-[10px] text-zinc-500 font-mono">172.255.210.203</div>
+            <div className="text-[10px] text-zinc-500 font-mono tracking-tight">172.255.210.203 &bull; VPS NEXUS</div>
           </div>
         </div>
 

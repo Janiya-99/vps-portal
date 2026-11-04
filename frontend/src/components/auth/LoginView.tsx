@@ -51,12 +51,12 @@ export function LoginView({ onSuccess }: LoginViewProps) {
               <Server className="h-7 w-7" />
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center justify-center gap-2">
-                VPS NEXUS
+              <CardTitle className="text-2xl font-black tracking-widest text-zinc-100 flex items-center justify-center gap-2">
+                PIXANDCO
                 <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_#f43f5e]" />
               </CardTitle>
-              <CardDescription className="text-xs text-zinc-400 mt-1.5">
-                Administrative access for <span className="font-mono text-rose-300 font-medium">172.255.210.203</span> &bull; <span className="font-mono text-zinc-400">vps.pixandco.lk</span>
+              <CardDescription className="text-xs text-zinc-400 mt-1.5 font-mono">
+                VPS Control Portal &bull; <span className="text-rose-300 font-medium">172.255.210.203</span>
               </CardDescription>
             </div>
           </CardHeader>

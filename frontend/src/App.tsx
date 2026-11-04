@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopHeader } from "@/components/layout/TopHeader";
+import { Footer } from "@/components/layout/Footer";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { LoginView } from "@/components/auth/LoginView";
 import { MetricKpiCard } from "@/components/telemetry/MetricKpiCard";
@@ -477,6 +478,9 @@ export function App() {
             </div>
           )}
         </main>
+
+        {/* Global Symmetrical Footer */}
+        <Footer />
       </div>
 
       {/* Global Cmd+K Command Palette */}
