@@ -240,3 +240,4 @@ All endpoints (except `/auth/login`, `/ping`, `/meta`) require the `jwt_token` c
    ```
 3. Start the stack: `docker compose up -d`
 4. Route domain in VPS Nexus (**Domains & Proxy**) or in NPM to `app-<project-slug>:<port>`.
+

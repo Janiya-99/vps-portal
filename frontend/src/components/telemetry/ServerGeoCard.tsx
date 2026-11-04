@@ -108,3 +108,4 @@ export function ServerGeoCard({
     </Card>
   );
 }
+
