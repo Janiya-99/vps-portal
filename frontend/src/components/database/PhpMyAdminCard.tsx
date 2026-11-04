@@ -2,17 +2,16 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Database, ExternalLink, Copy, Check, Shield, Server } from "lucide-react";
+import { Database, ExternalLink, Copy, Check, Shield, Server, Key } from "lucide-react";
 import { toast } from "sonner";
 
 export function PhpMyAdminCard() {
   const [copied, setCopied] = useState(false);
-  const mysqlPass = "7axxwAI6Ru2aDBXQoOnAdTxV";
 
-  const handleCopyPass = () => {
-    navigator.clipboard.writeText(mysqlPass);
+  const handleCopyCmd = () => {
+    navigator.clipboard.writeText("cat /opt/infra/database/.env | grep MYSQL_ROOT_PASSWORD");
     setCopied(true);
-    toast.success("MySQL Root Password Copied to Clipboard");
+    toast.success("Copied server secret retrieval command to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -81,19 +80,21 @@ export function PhpMyAdminCard() {
 
           {/* 3. Password Helper */}
           <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/60 p-3 space-y-1 flex flex-col justify-between">
-            <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wider">
+            <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wider flex items-center gap-1">
+              <Key className="h-3 w-3 text-amber-400" />
               Root Password
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-zinc-400">••••••••••••••••</span>
+              <span className="font-mono text-xs text-zinc-400">/opt/infra/database/.env</span>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleCopyPass}
+                onClick={handleCopyCmd}
                 className="h-6 px-2 text-[10px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 gap-1"
+                title="Copy command to read password from server"
               >
                 {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                <span>{copied ? "Copied" : "Copy"}</span>
+                <span>{copied ? "Copied" : "Copy Cmd"}</span>
               </Button>
             </div>
           </div>
@@ -102,4 +103,3 @@ export function PhpMyAdminCard() {
     </Card>
   );
 }
-
