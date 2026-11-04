@@ -1,65 +1,126 @@
-# PIXANDCO VPS Infrastructure & Control Portal
+# PIXANDCO VPS Control Portal
 
-**Brand:** `PIXANDCO`  
-**Host IP:** `172.255.210.203` (SSH alias: `vps-prod`)  
-**Secure Domain:** [`https://vps.pixandco.lk`](https://vps.pixandco.lk) (Let's Encrypt SSL)  
-**Portal Web URL:** [`http://172.255.210.203`](http://172.255.210.203)  
-**phpMyAdmin Console:** [`http://172.255.210.203:8085`](http://172.255.210.203:8085)  
-**NPM Admin Console:** [`http://172.255.210.203:81`](http://172.255.210.203:81)  
+PIXANDCO VPS Control Portal is a lightweight, single-binary infrastructure control nexus designed for VPS management, container orchestration, database provisioning, and host telemetry. Built with a high-performance Go 1.23 backend and a modern React 19 cybernetic interface (Black & Charm Red), it provides an all-in-one administration panel with zero third-party agent dependencies.
 
 ---
 
-## 1. Quick Access Information
+## 1. System Architecture
 
-### PIXANDCO Control Portal
-- **Primary Domain:** [`https://vps.pixandco.lk`](https://vps.pixandco.lk) (Auto HTTP -> HTTPS redirect)
-- **Direct IP Fallback:** [`http://172.255.210.203`](http://172.255.210.203)
-- **Username:** `admin`
-- **Default Password:** Stored securely in `/opt/apps/vps-portal/.env.production` on the host (`chmod 600`)
+### Architectural Topology
 
-### phpMyAdmin Web Console (Port 8085)
-- **URL:** [`http://172.255.210.203:8085`](http://172.255.210.203:8085)
-- **Server:** `shared-mysql` (Port `3306`)
-- **Username:** `root`
-- **Password:** Stored in `/opt/infra/database/.env` (`MYSQL_ROOT_PASSWORD`)
+```
++-------------------------------------------------------------------------+
+|                              CLIENT BROWSER                             |
+|         (React 19 + TypeScript + Tailwind CSS + Lucide + SSE)           |
++-------------------------------------------------------------------------+
+                                    |
+                            HTTPS / WSS (TLS)
+                                    |
+                                    v
++-------------------------------------------------------------------------+
+|                    INVERSE PROXY / INGRESS LAYER                        |
+|                     (Nginx Reverse Proxy & Certbot)                     |
+|                   Public Ports: 80 (HTTP) / 443 (HTTPS)                 |
++-------------------------------------------------------------------------+
+                                    |
+                             Reverse Proxy
+                                    |
+                                    v
++-------------------------------------------------------------------------+
+|                      PIXANDCO BACKEND CONTROL DAEMON                    |
+|                (Go 1.23 + Chi Router + Static Asset Embed)              |
+|                                                                         |
+|  - JWT Session Auth (HttpOnly Cookies)   - gopsutil Telemetry Engine    |
+|  - Docker Engine SDK Client              - Database Provisioning Engine |
+|  - Real-time SSE Stream Hub              - Automated Backup Manager     |
++-------------------------------------------------------------------------+
+         |                                                 |
+         | Unix Domain Socket (/var/run/docker.sock)       | Internal Bridge Network
+         v                                                 v
++---------------------+    +----------------------------------------------+
+|    DOCKER ENGINE    |    |      INTERNAL ISOLATED DOCKER NETWORK        |
+|                     |    |             ("shared-network")               |
+| - Container Lifecycle|   |                                              |
+| - Live Log Streams  |    |  +--------------------+ +-----------------+  |
+| - Image & Prune Ops |    |  |  Shared MySQL 8.0  | |  Shared Redis 7 |  |
+| - Container Metrics |    |  |   (Port 3306 int)  | | (Port 6379 int) |  |
++---------------------+    |  +--------------------+ +-----------------+  |
+                           |  +--------------------+                      |
+                           |  |  phpMyAdmin Web    |                      |
+                           |  |  (Database GUI)    |                      |
+                           |  +--------------------+                      |
+                           +----------------------------------------------+
+```
 
-### Nginx Proxy Manager (Port 81)
-- **URL:** [`http://172.255.210.203:81`](http://172.255.210.203:81)
-- **Default User:** `admin@example.com`
-- **Default Password:** `changeme` *(Prompted to change on first login)*
+### Network & Security Isolation Model
 
-### Core Database & Cache Credentials
-- Stored securely on server in `/opt/infra/database/.env` (`chmod 600`)
-- `MYSQL_ROOT_PASSWORD`: `<Configured in /opt/infra/database/.env>`
-- `REDIS_PASSWORD`: `<Configured in /opt/infra/database/.env>`
+* **Public Ingress Layer:** Only port 80 (HTTP redirect) and port 443 (HTTPS) are open to the public internet, fronted with Let's Encrypt TLS encryption.
+* **Internal Bridge Network (`shared-network`):** Database services (MySQL 8.0) and cache stores (Redis 7) have no host port bindings on `0.0.0.0` and communicate exclusively across the private Docker bridge network.
+* **Socket Isolation:** The control daemon communicates directly with the Docker daemon via the local `/var/run/docker.sock` UNIX domain socket without exposing the Docker daemon to TCP.
+* **Single Binary Deployment:** The entire compiled React frontend is embedded directly into the Go binary (`embed.FS`), running in a unified ~20MB container footprint.
 
----
-
-## 2. Portal Features & Tech Stack
-
-- **Branding & UI Theme:** Obsidian pitch-black (`#050508`) with neon Charm Red (`#e11d48` / `#f43f5e`) glowing accents, symmetrical cards, live ping latency radar, and Singapore datacenter telemetry.
-- **Backend:** Go 1.23+ with `chi` router, Docker SDK over `/var/run/docker.sock`, `gopsutil` host telemetry, MySQL & Redis clients, JWT authentication in `HttpOnly, SameSite=Strict` cookies.
-- **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui (Radix primitives) + Lucide icons + Recharts + Sonner.
-- **Architecture:** Embedded single Go binary (~20MB memory footprint) serving API and static assets directly from memory. Complete architecture details in [`SOFTWARE_ARCHITECTURE_AND_GUIDE.md`](./SOFTWARE_ARCHITECTURE_AND_GUIDE.md).
-- **Modules:**
-  1. **Overview & Metrics:** 4-card symmetrical KPI strip (CPU sparkline, RAM & 4GB Swap bar, 200GB SSD usage, Docker bridge stats) + Core Infra restart strip.
-  2. **Apps & Containers:** Docker container list, start/stop/restart, live SSE log streaming terminal (`Sheet`), key-value `.env` editor (`Sheet`), and new app scaffolding wizard.
-  3. **Databases & Cache:** 1-click isolated MySQL schema/user provisioner with copyable `.env` block, phpMyAdmin web console card, and Redis memory/keys/flush inspector.
-  4. **Domains & Reverse Proxy:** Nginx Proxy Manager route overview and automated Let's Encrypt SSL certificate provisioning.
-  5. **Backups & Operations:** Rolling 7-day MySQL `.sql.gz` backup manager with 1-click download/run, and Docker image/cache prune tool.
-
----
-
-## 3. Deployment Directory Layout (`/opt`)
+### Filesystem & Deployment Layout
 
 ```
 /opt/
 ├── infra/
-│   ├── proxy/                      # Nginx Proxy Manager (Ports 80, 443, 81)
-│   └── database/                   # Shared MySQL 8.0 & Redis 7 stacks + phpMyAdmin (8085)
+│   ├── proxy/                      # Nginx reverse proxy configuration & SSL certs
+│   └── database/                   # Multi-tenant MySQL 8.0 and Redis 7 storage volumes
 ├── apps/
-│   └── vps-portal/                 # PIXANDCO Control Panel Stack (app-vps-portal:8080)
+│   └── vps-portal/                 # Portal daemon stack & environment definitions
 └── ops/
-    ├── backups/                    # Daily automated mysqldump & 7-day .sql.gz archives
-    └── maintenance/                # Weekly Docker builder & image pruning script
+    ├── backups/                    # Daily automated mysqldump .sql.gz rolling archives
+    └── maintenance/                # Builder cache and container prune automation
 ```
+
+---
+
+## 2. Functions & Capabilities
+
+### 1. Host Telemetry & Infrastructure Monitoring
+* **Real-time CPU Telemetry:** Multi-core usage percentage, AMD EPYC load averages (1m, 5m, 15m), and live historical sparkline visualization.
+* **Memory & Swap Utilization:** Real-time RAM allocation monitoring, used vs. available memory bytes, and dedicated 4GB swap memory tracking.
+* **Disk Capacity & Free Space:** Primary root filesystem (`/`) capacity tracking, used space percentage, and free gigabyte metrics.
+* **Docker Network Health:** Live container count (active vs. total) and bridge network status verification.
+* **Ping Latency Radar:** Real-time round-trip latency calculated over Server-Sent Events (SSE) displayed in milliseconds with color-coded performance thresholds.
+* **Geographical Server Identification:** Automatic detection and display of datacenter region, carrier ASN, city, country, and timezone.
+
+### 2. Application & Container Orchestration
+* **Container Lifecycle Management:** View, inspect, start, stop, and restart any container running on the host.
+* **Live Log Streaming Terminal:** Real-time container stdout/stderr log streaming with customizable tail lines via SSE.
+* **In-Portal Environment Configuration:** View and edit `.env.production` files for managed applications directly through an interactive slide-over editor.
+* **App Scaffolding Wizard:** Guided workflow to scaffold and deploy new containerized applications on the host filesystem.
+* **Container Search & Filtering:** Fast client-side filtering across containers by name, image, state, and exposed ports.
+
+### 3. Database Administration & Cache Management
+* **Automated MySQL Provisioning:** One-click creation of isolated MySQL databases with unique credentials, dedicated database users, and restricted grants.
+* **Instant Connection Strings:** Copy-ready connection environment blocks (`DATABASE_URL`, individual connection variables) for instant app configuration.
+* **Integrated phpMyAdmin Interface:** Dedicated graphical web administration for full database queries, schema design, table management, and SQL execution.
+* **Redis Cache Telemetry:** Live stats on connected clients, total keys, memory usage footprint, operations per second, and uptime.
+* **On-Demand Cache Flush:** Fast manual clearing of Redis cache keys with confirmation safeguards.
+
+### 4. Domain & Reverse Proxy Routing
+* **Proxy Route Management:** Overview of reverse proxy routes mapping external hostnames to internal container ports.
+* **Automated Let's Encrypt SSL:** SSL/TLS certificate request, verification, and automated renewal management.
+* **HTTP to HTTPS Redirection:** Automatic enforcement of modern TLS encryption across all incoming traffic.
+
+### 5. Automated Backups & Host Maintenance
+* **Daily MySQL Automated Backups:** Scheduled automated backups generating compressed `.sql.gz` archives with timestamping.
+* **Rolling Archive Retention:** Automatic retention management keeping a clean rolling history of daily archives while cleaning expired backups.
+* **Manual Backup Execution:** One-click trigger to generate an immediate database backup archive.
+* **Direct Archive Download:** In-portal listing of available backup files with size details and direct download capability.
+* **Docker System Prune:** One-click cleanup of unused Docker builder caches, dangling images, and stopped containers to free up SSD space.
+
+### 6. Security & Access Control
+* **Cookie-Based JWT Authentication:** Stateless JSON Web Token authentication stored in secure `HttpOnly`, `SameSite=Strict` cookies to mitigate XSS risks.
+* **Uncomplicated Firewall (UFW) Integration:** Continuous tracking and status verification of active host firewall rules.
+* **Secret Protection:** Strict `.gitignore` rules preventing `.env` configurations, SSL keys, passwords, and database dumps from being committed.
+* **Command Palette (Cmd+K / Ctrl+K):** Keyboard-driven universal navigation palette for rapid access to metrics, apps, databases, backups, and maintenance tasks.
+
+---
+
+## 3. Technology Stack
+
+* **Backend:** Go 1.23, Chi Router, Docker Go SDK, gopsutil, Go-MySQL-Driver, Go-Redis, Golang-JWT.
+* **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, shadcn/ui, Radix UI Primitives, Lucide Icons, Recharts, Sonner.
+* **Infrastructure Services:** Docker Engine, Nginx Proxy Manager, MySQL 8.0, Redis 7 Alpine, phpMyAdmin.
